@@ -16,7 +16,7 @@ import streamlit as st
 from st_screen_stats import st_screen_data
 
 value = st_screen_data(
-    setTime=1000 # this dictates pause until data is received. Done to prevent constant refreshing of app. Default is 1000
+    setTime=1000 # this dictates pause until data is received. Done to prevent constant refreshing of app. Default is 1000 (1sec)
 )
 
 st.write(value)
