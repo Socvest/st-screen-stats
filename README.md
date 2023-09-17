@@ -1,4 +1,4 @@
-# streamlit-custom-component
+# streamlit-screen-stats
 
 Streamlit component that allows you to do get various stats for your screeen to build repsonsive apps for your users with different devices. 
 
