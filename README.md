@@ -1,11 +1,11 @@
 # streamlit-custom-component
 
-Streamlit component that allows you to do X
+Streamlit component that allows you to do get various stats for your screeen to build repsonsive apps for your users with different devices. 
 
 ## Installation instructions
 
 ```sh
-pip install streamlit-custom-component
+pip install streamlit-screen-stats
 ```
 
 ## Usage instructions
