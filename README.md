@@ -1,6 +1,6 @@
 # streamlit-screen-stats
 
-Streamlit component that allows you to do get various stats for your screeen to build repsonsive apps for your users with different devices. 
+Streamlit component that allows you to do get various stats for your screeen to build repsonsive apps for your users with different devices.
 
 ## Installation instructions
 
@@ -12,12 +12,23 @@ pip install streamlit-screen-stats
 
 ```python
 import streamlit as st
+from st_screen_stats import ScreenData, StreamlitNativeWidgetScreen
 
-from st_screen_stats import st_screen_data
+# using react component
+screenD = ScreenData(setTimeout=1000)
+screen_d = screenD.st_screen_data_window_top()
+st.write(screen_d)
 
-value = st_screen_data(
-    setTime=1000 # this dictates pause until data is received. Done to prevent constant refreshing of app. Default is 1000 (1sec)
-)
+# using sctreamlit native widget and some custom components
+# Requirements:
+#             Need to install from pypi:
+#             - streamlit-browser-session-storage (pip install streamlit-browser-session-storage)
+#             - streamlit-local-storage (pip install streamlit-local-storage)
+screenDN = StreamlitNativeWidgetScreen(setTimeout=1000)
+screenDN.st_screen_data_window_top()
+stats_ = screenDN.get_window_screen_stats()
+st.write(stats_)
 
-st.write(value)
+# decided to build alternatives in case one is less reliable than the other. 
+
 ```
