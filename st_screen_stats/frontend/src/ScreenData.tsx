@@ -7,18 +7,37 @@ import {
 import React, { ReactNode, useState, useEffect } from "react"
 
 
-const ScreenData: React.FC<ComponentProps>  = (props) => {
+const ScreenData: React.FC<ComponentProps> = (props) => {
 
   const { args } = props
 
   const setTime:any = args['setTime'] || 1000
+  const windowType:any = args['windowType']
+
+  const [windowTopWidth, setWindowTopWidth] = useState({
+    screen: {
+      height:window.top?.screen.height,
+      width: window.top?.screen.width,
+      availHeight: window.top?.screen.availHeight,
+      availWidth: window.top?.screen.availWidth,
+      colorDepth: window.top?.screen.colorDepth,
+      pixelDepth: window.top?.screen.pixelDepth,
+      screenOrientation: {
+        angle:window.top?.screen.orientation.angle,
+        type: window.top?.screen.orientation.type
+      } 
+    },    
+    innerWidth: window.top?.innerWidth, 
+    innerHeight: window.top?.innerHeight
+  
+  })
 
   const [windowWidth, setWindowWidth] = useState({
     screen: {
       height:window.screen.height,
       width: window.screen.width,
       availHeight: window.screen.availHeight,
-      availwidth: window.screen.availWidth,
+      availWidth: window.screen.availWidth,
       colorDepth: window.screen.colorDepth,
       pixelDepth: window.screen.pixelDepth,
       screenOrientation: {
@@ -26,8 +45,8 @@ const ScreenData: React.FC<ComponentProps>  = (props) => {
         type: window.screen.orientation.type
       } 
     },    
-    innerWidth: window.innerWidth, 
-    innerHeight: window.innerHeight
+    innerWidth: window.top?.innerWidth, 
+    innerHeight: window.top?.innerHeight
   
   })
 
@@ -40,16 +59,17 @@ const ScreenData: React.FC<ComponentProps>  = (props) => {
   }
 
   const delayedScreenWidth = debounce(function detectSize () {
+
     setWindowWidth({
       screen: {
         height:window.screen.height,
         width: window.screen.width,
         availHeight: window.screen.availHeight,
-        availwidth: window.screen.availWidth,
+        availWidth: window.screen.availWidth,
         colorDepth: window.screen.colorDepth,
         pixelDepth: window.screen.pixelDepth,
         screenOrientation: {
-          angle:window.screen.orientation.angle,
+          angle: window.screen.orientation.angle,
           type: window.screen.orientation.type
         } 
       },
@@ -57,19 +77,50 @@ const ScreenData: React.FC<ComponentProps>  = (props) => {
       innerHeight: window.innerHeight
     })
 
+    setWindowTopWidth({
+      screen: {
+        height:window.top?.screen.height,
+        width: window.top?.screen.width,
+        availHeight: window.top?.screen.availHeight,
+        availWidth: window.top?.screen.availWidth,
+        colorDepth: window.top?.screen.colorDepth,
+        pixelDepth: window.top?.screen.pixelDepth,
+        screenOrientation: {
+          angle:window.top?.screen.orientation.angle,
+          type: window.top?.screen.orientation.type
+        } 
+      },    
+      innerWidth: window.top?.innerWidth, 
+      innerHeight: window.top?.innerHeight
+    
+    })
+
   })
   
-    useEffect(() => {
+  useEffect(() => {
 
-      Streamlit.setComponentValue(windowWidth)
-      Streamlit.setComponentReady()
+    switch (windowType) {
+      case "window":
+        Streamlit.setComponentValue(windowWidth)
+        Streamlit.setComponentReady()
+        break
+      case "windowTop":
+        Streamlit.setComponentValue(windowTopWidth)
+        Streamlit.setComponentReady()
+        break
+      default:
+        break
+    }
 
       window.addEventListener('resize', delayedScreenWidth)
+
+      
 
       return () => {
         window.removeEventListener('resize', delayedScreenWidth)
       }
-    }, [windowWidth])
+    }, [windowWidth, windowTopWidth])
+
   return (
     <div style={{display:"none"}}></div>
   )
