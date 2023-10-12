@@ -1,1 +1,1 @@
-recursive-include st_screen_stats/frontend/build *
+recursive-include st_screen_stats/*/frontend/build *

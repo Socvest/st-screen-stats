@@ -1,87 +1,47 @@
-# Streamlit Component Templates
+# streamlit-screen-stats
 
-This repo contains templates and example code for creating [Streamlit](https://streamlit.io) Components.
+Streamlit component that allows you to do get various stats for your screeen to build repsonsive apps for your users with different devices.
 
-For complete information, please see the [Streamlit Components documentation](https://docs.streamlit.io/en/latest/streamlit_components.html)!
+## Installation instructions
 
-## Overview
+```sh
+pip install streamlit-screen-stats
+```
 
-A Streamlit Component is made out of a Python API and a frontend (built using any web tech you prefer). 
+## Usage instructions
 
-A Component can be used in any Streamlit app, can pass data between Python and frontend code, and and can optionally be distributed on [PyPI](https://pypi.org/) for the rest of the world to use.
-
-* Create a component's API in a single line of Python:
 ```python
-import streamlit.components.v1 as components
+import streamlit as st
+from st_screen_stats import ScreenData, StreamlitNativeWidgetScreen, WindowQuerySize, WindowScreenRange
 
-# Declare the component:
-my_component = components.declare_component("my_component", path="frontend/build")
+# using react component
+screenD = ScreenData(setTimeout=1000)
+screen_d = screenD.st_screen_data_window_top()
+st.write(screen_d)
 
-# Use it:
-my_component(greeting="Hello", name="World")
+# using sctreamlit native widget and some custom components
+# Requirements:
+#  Need to install from pypi:
+#    - streamlit-browser-session-storage (pip install streamlit-browser-session-storage)
+#    - streamlit-local-storage (pip install streamlit-local-storage)
+screenDN = StreamlitNativeWidgetScreen(setTimeout=1000)
+screenDN.st_screen_data_window_top()
+stats_ = screenDN.get_window_screen_stats()
+st.write(stats_)
+
+# Query window screen like you would when using CSS @media () {}
+
+size_r = WindowQuerySize()
+val_ = size_r.mediaQuery(mediaMatchQ="(max-width: 700px)")
+st.write(val_)
+
+# Query window size based on desired range or size
+rangeWindow = WindowScreenRange()
+bool_res = rangeWindow.WidthUpperRange(upperRange=1000)
+st.write(bool_res)
+
+bool_res_range = rangeWindow.WidthRange(upperRange=1000, lowerRange=400)
+st.write(bool_res_range)
+
+
 ```
-
-* Build the component's frontend out of HTML and JavaScript (or TypeScript, or ClojureScript, or whatever you fancy). React is supported, but not required:
-```typescript
-class MyComponent extends StreamlitComponentBase {
-    public render(): ReactNode {
-        // Access arguments from Python via `this.props.args`:
-        const greeting = this.props.args["greeting"]
-        const name = this.props.args["name"]
-        return <div>{greeting}, {name}!</div>
-    }
-}
-```
-
-## Quickstart
-
-* Ensure you have [Python 3.6+](https://www.python.org/downloads/), [Node.js](https://nodejs.org), and [npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm) installed.
-* Clone this repo.
-* Create a new Python virtual environment for the template:
-```
-$ cd template
-$ python3 -m venv venv  # create venv
-$ . venv/bin/activate   # activate venv
-$ pip install streamlit # install streamlit
-```
-* Initialize and run the component template frontend:
-```
-$ cd template/my_component/frontend
-$ npm install    # Install npm dependencies
-$ npm run start  # Start the Webpack dev server
-```
-* From a separate terminal, run the template's Streamlit app:
-```
-$ cd template
-$ . venv/bin/activate  # activate the venv you created earlier
-$ pip install -e . # install template as editable package
-$ streamlit run my_component/example.py  # run the example
-```
-* If all goes well, you should see something like this:
-![Quickstart Success](quickstart.png)
-* Modify the frontend code at `my_component/frontend/src/MyComponent.tsx`.
-* Modify the Python code at `my_component/__init__.py`.
-
-## Examples
-
-See the `template-reactless` directory for a template that does not use [React](https://reactjs.org/).
-
-See the `examples` directory for examples on working with pandas DataFrames, integrating with third-party libraries, and more.
-
-## Community-provided Templates
-
-These templates are provided by the community. If you run into any issues, please file your issues against their repositories.
-
-- [streamlit-component-svelte-template](https://github.com/93degree/streamlit-component-svelte-template) - [@93degree](https://github.com/93degree)
-- [streamlit-component-template-vue](https://github.com/andfanilo/streamlit-component-template-vue) - [@andfanilo](https://github.com/andfanilo)
-- [streamlit-component-template-react-hooks](https://github.com/whitphx/streamlit-component-template-react-hooks) - [@whitphx](https://github.com/whitphx)
-
-## Contributing
-
-If you want to contribute to this project, `./dev.py` script will be helpful for you. For details, run `./dev.py --help`.
-
-## More Information
-
-* [Streamlit Components documentation](https://docs.streamlit.io/library/components)
-* [Streamlit Forums](https://discuss.streamlit.io/tag/custom-components)
-* [Streamlit Components gallery](https://www.streamlit.io/components)
