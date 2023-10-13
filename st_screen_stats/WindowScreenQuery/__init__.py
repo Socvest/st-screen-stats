@@ -38,6 +38,22 @@ class WindowQuerySize:
         if mediaMatchQ == None or type(mediaMatchQ) != str:
             return
 
-        value = _st_window_query_size(windowType="mediaQuery", mediaMatchQ=mediaMatchQ, key=key, default=default)
+        value = _st_window_query_size(windowType="window", mediaMatchQ=mediaMatchQ, key=key, default=default)
+
+        return value
+
+    def mediaQueryT(self, mediaMatchQ:str=None, default=None, key=None):
+        """
+        Boolean result after query screen size upper most window.
+        Args:
+            - mediaMatchQ: string query. 
+                Example: "(max-width: 700px)" which will return boolean result `{status:true}` if the window size is lower or `{status:true}` if window size is greater.
+
+        """
+
+        if mediaMatchQ == None or type(mediaMatchQ) != str:
+            return
+
+        value = _st_window_query_size(windowType="windowTop", mediaMatchQ=mediaMatchQ, key=key, default=default)
 
         return value
