@@ -12,7 +12,7 @@ class StreamlitNativeWidgetScreen:
         2. st_screen_data_window_top() - get screen stats based on upper most window -> recommended
     
         Args:
-            - setTimeout: this dictates period pause until data is received after resize. Default is 1000 (1 second)
+            - setTimeout: this dictates period pause until data is received after resize. Default is 1000[ms] (1 second)
             - localSessionStorage: where to store the screen data. 0 -> local storage, 1 -> session storage
 
         Requirements:
@@ -42,7 +42,7 @@ class StreamlitNativeWidgetScreen:
 
                         function storeScreenStats (e) {{
                         
-                            const screenData = {{"screen": {{
+                            const screenData = {{"screenStats":{{"screen": {{
                                     "height":window.top.screen.height,
                                     "width":window.top.screen.width,
                                     "availHeight":window.top.screen.availHeight,
@@ -59,6 +59,7 @@ class StreamlitNativeWidgetScreen:
                                     "innerHeight":window.top.innerHeight                                    
                                                             
                                 }}
+                            }}
 
                             {self.localSessionStorage}.setItem("screenStats", JSON.stringify(screenData)); 
 
@@ -89,7 +90,7 @@ class StreamlitNativeWidgetScreen:
 
                         function storeScreenStats (e) {{
                         
-                            const screenData = {{"screen": {{
+                            const screenData = {{"screenStats":{{"screen": {{
                                     "height":window.screen.height,
                                     "width":window.screen.width,
                                     "availHeight":window.screen.availHeight,
@@ -104,6 +105,7 @@ class StreamlitNativeWidgetScreen:
                                     "innerWidth":window.top.innerWidth,
                                     "innerHeight":window.top.innerHeight  
                                 }}
+                            }}
 
                             {self.localSessionStorage}.setItem("screenStats", JSON.stringify(screenData)); 
                                 
@@ -124,15 +126,19 @@ class StreamlitNativeWidgetScreen:
 
     def get_window_screen_stats(self, key="get_item"):
         """
-        Using local storage or session storage libraries to get the screen data into streamlit
+        Using local storage or session storage libraries to get the screen data from browser storage into streamlit frontend
         """
+        if self.setTimeout != None:
+            pause = (self.setTimeout/1000)+1
+        else: 
+            pause = None
 
         if self.localSessionStorage == "sessionStorage":
-            sessionS = self.SessionStorage()
+            sessionS = self.SessionStorage(key=key, pause=pause)
             current_stats_ = sessionS.getItem("screenStats", key=key)
         else:
-            localS = self.LocalStorage()
-            current_stats_ = localS.getItem("screenStats", key=key)
+            localS = self.LocalStorage(key=key, pause=pause) 
+            current_stats_ = localS.getItem(itemKey="screenStats")
 
         return current_stats_
 
