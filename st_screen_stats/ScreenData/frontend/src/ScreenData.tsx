@@ -6,63 +6,61 @@ import {
 } from "streamlit-component-lib"
 import React, { ReactNode, useState, useEffect } from "react"
 
-
 const ScreenData: React.FC<ComponentProps> = (props) => {
 
   const { args } = props
 
-  const setTime:any = args['setTime'] || 1000
-  let windowType:any = args["windowType"]
+  const setTime: any = args['setTime'] || 1000
+  let windowType: any = args["windowType"]
 
   const [windowTopWidth, setWindowTopWidth] = useState({
     screen: {
-      height:window.top?.screen.height,
+      height: window.top?.screen.height,
       width: window.top?.screen.width,
       availHeight: window.top?.screen.availHeight,
       availWidth: window.top?.screen.availWidth,
       colorDepth: window.top?.screen.colorDepth,
       pixelDepth: window.top?.screen.pixelDepth,
       screenOrientation: {
-        angle:window.top?.screen.orientation.angle,
+        angle: window.top?.screen.orientation.angle,
         type: window.top?.screen.orientation.type
-      } 
-    },    
-    innerWidth: window.top?.innerWidth, 
+      }
+    },
+    innerWidth: window.top?.innerWidth,
     innerHeight: window.top?.innerHeight
-  
   })
 
   const [windowWidth, setWindowWidth] = useState({
     screen: {
-      height:window.screen.height,
+      height: window.screen.height,
       width: window.screen.width,
       availHeight: window.screen.availHeight,
       availWidth: window.screen.availWidth,
       colorDepth: window.screen.colorDepth,
       pixelDepth: window.screen.pixelDepth,
       screenOrientation: {
-        angle:window.screen.orientation.angle,
+        angle: window.screen.orientation.angle,
         type: window.screen.orientation.type
-      } 
-    },    
-    innerWidth: window.innerWidth, 
+      }
+    },
+    innerWidth: window.innerWidth,
     innerHeight: window.innerHeight
-  
+
   })
 
-  function debounce(func:any, time=setTime){
-    var timer:any;
-    return function(event:any){
-        if(timer) clearTimeout(timer);
-        timer = setTimeout(func, time, event);
+  function debounce(func: any, time = setTime) {
+    var timer: any;
+    return function (event: any) {
+      if (timer) clearTimeout(timer);
+      timer = setTimeout(func, time, event);
     };
   }
 
-  const delayedScreenWidth = debounce(function detectSize () {
+  const delayedScreenWidth = debounce(function detectSize() {
 
     setWindowWidth({
       screen: {
-        height:window.screen.height,
+        height: window.screen.height,
         width: window.screen.width,
         availHeight: window.screen.availHeight,
         availWidth: window.screen.availWidth,
@@ -71,31 +69,31 @@ const ScreenData: React.FC<ComponentProps> = (props) => {
         screenOrientation: {
           angle: window.screen.orientation.angle,
           type: window.screen.orientation.type
-        } 
+        }
       },
-      innerWidth: window.innerWidth, 
+      innerWidth: window.innerWidth,
       innerHeight: window.innerHeight
     })
 
   })
 
-  const delayedScreenWidthTop = debounce(function detectSizeTop () {
+  const delayedScreenWidthTop = debounce(function detectSizeTop() {
     setWindowTopWidth({
       screen: {
-        height:window.top?.screen.height,
+        height: window.top?.screen.height,
         width: window.top?.screen.width,
         availHeight: window.top?.screen.availHeight,
         availWidth: window.top?.screen.availWidth,
         colorDepth: window.top?.screen.colorDepth,
         pixelDepth: window.top?.screen.pixelDepth,
         screenOrientation: {
-          angle:window.top?.screen.orientation.angle,
+          angle: window.top?.screen.orientation.angle,
           type: window.top?.screen.orientation.type
-        } 
-      },    
-      innerWidth: window.top?.innerWidth, 
+        }
+      },
+      innerWidth: window.top?.innerWidth,
       innerHeight: window.top?.innerHeight
-    
+
     })
   })
 
@@ -110,35 +108,36 @@ const ScreenData: React.FC<ComponentProps> = (props) => {
         break
     }
 
-      window.addEventListener('resize', delayedScreenWidth)
-      
-      return () => {
-        window.removeEventListener('resize', delayedScreenWidth)
-      }
-    }, [windowWidth])
+    window.addEventListener('resize', delayedScreenWidth)
+
+    return () => {
+      window.removeEventListener('resize', delayedScreenWidth)
+    }
+  }, [windowWidth])
 
   useEffect(() => {
 
-      switch (windowType) {
-        case "windowTop":
-          Streamlit.setComponentValue(windowTopWidth)
-          Streamlit.setComponentReady()
-          break
-        default:
-          break
-      }
+    switch (windowType) {
+      case "windowTop":
+        
+        Streamlit.setComponentValue(windowTopWidth)
+        Streamlit.setComponentReady()
+        break
+      default:
+        break
+    }
 
-      window.top?.addEventListener('resize', delayedScreenWidthTop)
+    window.top?.addEventListener('resize', delayedScreenWidthTop)
 
-      return () => {
-        window.top?.removeEventListener('resize', delayedScreenWidthTop)
-      }
+    return () => {
+      window.top?.removeEventListener('resize', delayedScreenWidthTop)
+    }
 
-    }, [windowTopWidth])
+  }, [windowTopWidth])
 
- 
+
   return (
-    <div style={{display:"none"}}></div>
+    <div style={{ display: "none" }}></div>
   )
 }
 
