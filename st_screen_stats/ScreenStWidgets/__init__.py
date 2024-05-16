@@ -7,9 +7,9 @@ class StreamlitNativeWidgetScreen:
 
     """
     Component that uses streamlit's component.html method to derive various window screen stats. This may provide better performance than the other class.
-    Two methods:
-        1. st_screen_data_window() - get screen stats based on size of window/iframe. 
-        2. st_screen_data_window_top() - get screen stats based on upper most window -> recommended
+    Methods:
+        st_screen_data_window() - get screen stats based on size of streamlit app
+        
     
         Args:
             - setTimeout: this dictates period pause until data is received after resize. Default is 1000[ms] (1 second)
@@ -28,57 +28,9 @@ class StreamlitNativeWidgetScreen:
         self.setTimeout = setTimeout
         self.localSessionStorage = ["localStorage", "sessionStorage"][localSessionStorage]
     
-    def st_screen_data_window_top(self):
-        """
-        Using javascript to get and store the upper most window screen data to session or local storage
-        """
-
-        js_el = f'''
-
-                    <script>
-                        function delay(time) {{
-                            return new Promise(resolve => setTimeout(resolve, time));
-                            }}
-
-                        function storeScreenStats (e) {{
-                        
-                            const screenData = {{"screenStats":{{"screen": {{
-                                    "height":window.top.screen.height,
-                                    "width":window.top.screen.width,
-                                    "availHeight":window.top.screen.availHeight,
-                                    "availWidth":window.top.screen.availWidth,
-                                    "colorDepth": window.top.screen.colorDepth,
-                                    "pixelDepth": window.top.screen.pixelDepth,
-                                    "screenOrientation": {{
-                                            "angle":window.top.screen.orientation.angle,
-                                            "type":window.top.screen.orientation.type
-                                        }},
-                                    
-                                    }},
-                                    "innerWidth":window.top.innerWidth,
-                                    "innerHeight":window.top.innerHeight                                    
-                                                            
-                                }}
-                            }}
-
-                            {self.localSessionStorage}.setItem("screenStats", JSON.stringify(screenData)); 
-
-                            }};
-                        
-                        let storageItem = JSON.parse({self.localSessionStorage}.getItem("screenStats"))
-
-                        if ( storageItem === null || storageItem["screenStats"] === null ){{
-                                storeScreenStats()
-                            }} 
-                        delay({self.setTimeout}).then(() => window.top.addEventListener("resize", storeScreenStats))
-                    </script>
-
-                '''
-        st.components.v1.html(js_el, width=0, height=0) 
-    
     def st_screen_data_window(self):
         """
-        Using javascript to get and store the current window (bound by iframe fyi) data to session or local storage
+        Using javascript to get and store the window parent screen (streamlit app) data to session or local storage
         """
 
         js_el = f'''
@@ -91,19 +43,19 @@ class StreamlitNativeWidgetScreen:
                         function storeScreenStats (e) {{
                         
                             const screenData = {{"screenStats":{{"screen": {{
-                                    "height":window.screen.height,
-                                    "width":window.screen.width,
-                                    "availHeight":window.screen.availHeight,
-                                    "availWidth":window.screen.availWidth,
-                                    "colorDepth": window.screen.colorDepth,
-                                    "pixelDepth": window.screen.pixelDepth,
+                                    "height":window.parent.height,
+                                    "width":window.parent.width,
+                                    "availHeight":window.parent.availHeight,
+                                    "availWidth":window.parent.availWidth,
+                                    "colorDepth": window.parent.colorDepth,
+                                    "pixelDepth": window.parent.pixelDepth,
                                     "screenOrientation": {{
-                                            "angle":window.screen.orientation.angle,
-                                            "type":window.screen.orientation.type
+                                            "angle":window.parent.orientation.angle,
+                                            "type":window.parent.orientation.type
                                         }},
                                     }},
-                                    "innerWidth":window.top.innerWidth,
-                                    "innerHeight":window.top.innerHeight  
+                                    "innerWidth":window.parent.innerWidth,
+                                    "innerHeight":window.parent.innerHeight  
                                 }}
                             }}
 
