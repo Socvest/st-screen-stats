@@ -1,9 +1,10 @@
 import os
 import time 
 import streamlit as st
+from typing import Literal, Optional, Union
 import streamlit.components.v1 as components
+from st_screen_stats.streamlit_callback import register 
 from st_screen_stats import IS_RELEASE
-
 
 if not IS_RELEASE:
     _st_window_query_size = components.declare_component(
@@ -21,172 +22,158 @@ else:
 
 class WindowQuerySize:
     """
-    Query screen using window.matchMedia() which works similarly to css' `@media () {}` query.
+    Query screen using window.parent.matchMedia() which works similarly to css' `@media () {}` query.
 
     Params on init:
         - pause [int]: time to first pause the component to give it time to mount/load. Will only be implemented once when the app first loads. (uses st.session_state - parameter named per method)
 
     ### Methods:
         - mediaQuery()
-        - mediaQueryT()
     """
 
-    def __init__(self, pause:int=1.5) -> None:
+    def __init__(self, pause:Union[int,float]=1.5) -> None:
         """
-            Pause 
+            params:
+                - pause[int]: period of time to pause when component first mounts/load before data is loaded.
         """
         self.pause = pause
 
-        if self.pause != None:
-            if "firstRunComponentMediaQuery" not in st.session_state:
-                st.session_state["firstRunComponentMediaQuery"] = False
-            if "firstRunComponentMediaQueryT" not in st.session_state:
-                st.session_state["firstRunComponentMediaQueryT"] = False
-
-    def mediaQuery(self, mediaMatchQ:str=None, default=None, key=None):
+    def mediaQuery(self, mediaMatchQ:str=None, default=None, on_change=None, args=None, kwargs=None, key=None):
         """
-        Boolean result after query screen window (browser tab/iframe/lower window).
-        Args:
-            - mediaMatchQ: string query. 
-                Example: "(max-width: 700px)" which will return boolean result `{status:True}` if the window size is lower or `{status:False}` if window size is greater.
+        
+        ### Arguments
+        - mediaMatchQ: string query. 
+            Example: "(max-width: 700px)" which will return boolean result `{status:True}` if the window size is lower or `{status:False}` if window size is greater.
+        - key: An optional string or integer to use as the unique key for the widget. If this is omitted, a key will be generated for the widget based on its content. Multiple widgets of the same type may not share the same key.
+        - on_change: callback to get stats only when screen size changes
+        - args: An optional tuple of args to pass to the callback.
+        - kwargs: An optional dict of kwargs to pass to the callback.
 
-        """
-
-        if mediaMatchQ == None or type(mediaMatchQ) != str:
-            return
-
-        value = _st_window_query_size(windowType="window", mediaMatchQ=mediaMatchQ, key=key, default=default)
-        if "firstRunComponentMediaQuery" in st.session_state and not st.session_state["firstRunComponentMediaQuery"] and self.pause != None:
-            time.sleep(self.pause)
-            st.session_state["firstRunComponentMediaQuery"] = True
-
-        return value
-
-    def mediaQueryT(self, mediaMatchQ:str=None, default=None, key=None):
-        """
-        Boolean result after query screen size of browser window.
-        Args:
-            - mediaMatchQ: string query. 
-                Example: "(max-width: 700px)" which will return boolean result `{status:True}` if the window size is lower or `{status:False}` if window size is greater.
+        ### Results
+        - Boolean result after query screen size of the parent window screen (streamlit app). 
 
         """
 
         if mediaMatchQ == None or type(mediaMatchQ) != str:
             return
 
-        value = _st_window_query_size(windowType="windowTop", mediaMatchQ=mediaMatchQ, key=key, default=default)
-        if "firstRunComponentMediaQueryT" in st.session_state and not st.session_state["firstRunComponentMediaQueryT"] and self.pause != None:
-            time.sleep(self.pause)
-            st.session_state["firstRunComponentMediaQueryT"] = True
+        value = _st_window_query_size(mediaMatchQ=mediaMatchQ, key=key, default=default)
+        if self.pause != None and (type(self.pause) == int or type(self.pause) == float):
+            if f"firstRunComponent_{key}" not in st.session_state:
+                st.session_state[f"firstRunComponent_{key}"] = False
+            
+            if not st.session_state[f"firstRunComponent_{key}"]:
+                time.sleep(self.pause)
+                st.session_state[f"firstRunComponent_{key}"] = True
+        
+        if on_change is not None:
+            if key is None:
+                st.error("You must pass a key if you want to use the on_change callback for the chip filter")
+            else:
+                register(key=key, callback=on_change, args=args, kwargs=kwargs)
 
         return value
 
 class WindowQueryHelper:
 
     """
-        Simplifies creating a query for the top window (main browser window) and window (tab window/iframe and other 'lower' windows)
+        Simplifies creating a query for the parent window screen (streamlit app)
         Params on init:
         - pause [int]: time to first pause the component to give it time to mount/load. Will only be implemented once when the app first loads. (uses st.session_state - parameter named per method)
         
         ### Methods:
             - minimum_window_size()
             - maximum_window_size()
-            - minimum_window_size_top()
-            - maximum_window_size_top()
             - window_range_width() 
-            - window_top_range_width()
 
     """
 
-    def __init__(self, pause:int=1.2) -> None:
+    def __init__(self, pause:Union[int,float]=1.2) -> None:
         self.pause = pause
 
-        if self.pause != None:
-            if "firstRunComponent_minimum_window_size" not in st.session_state:
-                st.session_state["firstRunComponent_minimum_window_size"] = False
-            if "firstRunComponent_maximum_window_size" not in st.session_state:
-                st.session_state["firstRunComponent_maximum_window_size"] = False
-            if "firstRunComponent_minimum_window_size_top" not in st.session_state:
-                st.session_state["firstRunComponent_minimum_window_size_top"] = False
-            if "firstRunComponent_maximum_window_size_top" not in st.session_state:
-                st.session_state["firstRunComponent_maximum_window_size_top"] = False
-            if "firstRunComponent_window_range_width" not in st.session_state:
-                st.session_state["firstRunComponent_window_range_width"] = False
-            if "firstRunComponent_window_top_range_width" not in st.session_state:
-                st.session_state["firstRunComponent_window_top_range_width"] = False
-
-    def minimum_window_size(self, min_width:int=None, key="min_width_window", default=None):
+    def minimum_window_size(self, min_width:int=None, key="min_width_window", on_change=None, args=None, kwargs=None, default=None):
 
         """
-            Returns a boolean (True) if the width of the screen window (browser tab/iframe/lower window) is greater than `min_width` parameter. False if its lower.
+            ### Arguments
+            - min_width: the lowest width of the screen. For example 1000 means that when the screen width is >= 1000 the component will return {status:true}. If not it will return {status:false}
+            - key: An optional string or integer to use as the unique key for the widget. If this is omitted, a key will be generated for the widget based on its content. Multiple widgets of the same type may not share the same key.
+            - on_change: callback to get stats only when screen size changes
+            - args: An optional tuple of args to pass to the callback.
+            - kwargs: An optional dict of kwargs to pass to the callback.
+
+            ### Returns
+            Returns a boolean (True) if the width of the parent window screen (streamlit app) is greater than `min_width` parameter. False if its lower.
         """
         if min_width == None or type(min_width) != int:
             return
         
         query_result = f"(min-width: {min_width}px)"
 
-        value = _st_window_query_size(windowType="window", mediaMatchQ=query_result, key=key, default=default)
-        if "firstRunComponent_minimum_window_size" in st.session_state and not st.session_state["firstRunComponent_minimum_window_size"] and self.pause != None:
-            time.sleep(self.pause)
-            st.session_state["firstRunComponent_minimum_window_size"] = True
+        value = _st_window_query_size(mediaMatchQ=query_result, key=key, default=default)
+        if self.pause != None and (type(self.pause) == int or type(self.pause) == float):
+            if f"firstRunComponent_{key}" not in st.session_state:
+                st.session_state[f"firstRunComponent_{key}"] = False
+            
+            if not st.session_state[f"firstRunComponent_{key}"]:
+                time.sleep(self.pause)
+                st.session_state[f"firstRunComponent_{key}"] = True
 
+        if on_change is not None:
+            if key is None:
+                st.error("You must pass a key if you want to use the on_change callback for the chip filter")
+            else:
+                register(key=key, callback=on_change, args=args, kwargs=kwargs)
+        
         return value
     
-    def maximum_window_size(self, max_width:int=None, key="max_width_window", default=None):
+    def maximum_window_size(self, max_width:int=None, key="max_width_window", on_change=None, args=None, kwargs=None, default=None):
 
         """
-            Returns a boolean (True) if the width of the screen window (browser tab/iframe/lower window) is lower than `max_width` parameter. False if its greater.
+            ### Arguments
+            - max_width: the lowest width of the screen. For example 1000 means that when the screen width is <= 1000 the component will return {status:true}. If not it will return {status:false}
+            - key: An optional string or integer to use as the unique key for the widget. If this is omitted, a key will be generated for the widget based on its content. Multiple widgets of the same type may not share the same key.
+            - on_change: callback to get stats only when screen size changes
+            - args: An optional tuple of args to pass to the callback.
+            - kwargs: An optional dict of kwargs to pass to the callback.
+
+            ### Returns
+            Returns a boolean (True) if the width of the parent window screen (streamlit app) is lower than `max_width` parameter. False if its greater.
         """
         if max_width == None or type(max_width) != int:
             return
         
         query_result = f"(max-width: {max_width}px)"
 
-        value = _st_window_query_size(windowType="window", mediaMatchQ=query_result, key=key, default=default)
-        if "firstRunComponent_maximum_window_size" in st.session_state and not st.session_state["firstRunComponent_maximum_window_size"] and self.pause != None:
-            time.sleep(self.pause)
-            st.session_state["firstRunComponent_maximum_window_size"] = True
+        value = _st_window_query_size(mediaMatchQ=query_result, key=key, default=default)
+        if self.pause != None and (type(self.pause) == int or type(self.pause) == float):
+            if f"firstRunComponent_{key}" not in st.session_state:
+                st.session_state[f"firstRunComponent_{key}"] = False
+            
+            if not st.session_state[f"firstRunComponent_{key}"]:
+                time.sleep(self.pause)
+                st.session_state[f"firstRunComponent_{key}"] = True
+        
+        if on_change is not None:
+            if key is None:
+                st.error("You must pass a key if you want to use the on_change callback for the chip filter")
+            else:
+                register(key=key, callback=on_change, args=args, kwargs=kwargs)
         
         return value
     
-    def minimum_window_size_top(self, min_width:int=None, key="min_width_window", default=None):
-
-        """
-            Returns a boolean (True) if the width of the screen window (browser window) is greater than `min_width` parameter. False if its lower.
-        """
-        if min_width == None or type(min_width) != int:
-            return
-        
-        query_result = f"(min-width: {min_width}px)"
-
-        value = _st_window_query_size(windowType="windowTop", mediaMatchQ=query_result, key=key, default=default)
-        if "firstRunComponent_minimum_window_size_top" in st.session_state and not st.session_state["firstRunComponent_minimum_window_size_top"] and self.pause != None:
-            time.sleep(self.pause)
-            st.session_state["firstRunComponent_minimum_window_size_top"] = True
-
-        return value
-    
-    def maximum_window_size_top(self, max_width:int=None, key="max_width_window", default=None):
-
-        """
-            Returns a boolean (True) if the width of the screen window (browser window) is lower than `max_width` parameter. False if its greater.
-        """
-        if max_width == None or type(max_width) != int:
-            return
-        
-        query_result = f"(max-width: {max_width}px)"
-
-        value = _st_window_query_size(windowType="windowTop", mediaMatchQ=query_result, key=key, default=default)
-        if "firstRunComponent_maximum_window_size_top" in st.session_state and not st.session_state["firstRunComponent_maximum_window_size_top"] and self.pause != None:
-            time.sleep(self.pause)
-            st.session_state["firstRunComponent_maximum_window_size_top"] = True
-
-        return value
-    
-    def window_range_width(self, min_width:int=None, max_width:int=None, default=None, key="window_min_max_range"):
+    def window_range_width(self, min_width:int=None, max_width:int=None, default=None, on_change=None, args=None, kwargs=None, key="window_min_max_range"):
         
         """
-            Returns boolean (True) if width of window (browser tab/iframe/lower window) is within the range of `min_width` and `max_width` specified. If not, it returns False.
+            ### Arguments
+            - min_width: the lowest width of the screen. 
+            - max_width: the lowest width of the screen. 
+            - key: An optional string or integer to use as the unique key for the widget. If this is omitted, a key will be generated for the widget based on its content. Multiple widgets of the same type may not share the same key.
+            - on_change: callback to get stats only when screen size changes
+            - args: An optional tuple of args to pass to the callback.
+            - kwargs: An optional dict of kwargs to pass to the callback.
+
+            ### Returns
+            Returns boolean (True) if width of parent window screen (streamlit app) is within the range of `min_width` and `max_width` specified. If not, it returns False.
         """
 
         if min_width == None or max_width == None or type(min_width) != int or type(max_width) != int:
@@ -194,28 +181,21 @@ class WindowQueryHelper:
         
         query_result = f'(min-width: {min_width}px) and (max-width: {max_width}px)'
 
-        value = _st_window_query_size(windowType="window", mediaMatchQ=query_result, key=key, default=default)
-        if "firstRunComponent_window_range_width" in st.session_state and not st.session_state["firstRunComponent_window_range_width"] and self.pause != None:
-            time.sleep(self.pause)
-            st.session_state["firstRunComponent_window_range_width"] = True
+        value = _st_window_query_size(mediaMatchQ=query_result, key=key, default=default)
+        if self.pause != None and (type(self.pause) == int or type(self.pause) == float):
+            if f"firstRunComponent_{key}" not in st.session_state:
+                st.session_state[f"firstRunComponent_{key}"] = False
+            
+            if not st.session_state[f"firstRunComponent_{key}"]:
+                time.sleep(self.pause)
+                st.session_state[f"firstRunComponent_{key}"] = True
+        
+        if on_change is not None:
+            if key is None:
+                st.error("You must pass a key if you want to use the on_change callback for the chip filter")
+            else:
+                register(key=key, callback=on_change, args=args, kwargs=kwargs)
 
         return value
     
-    def window_top_range_width(self, min_width:int=None, max_width:int=None, default=None, key="window_min_max_range"):
-        
-        """
-            Returns boolean (True) if width of window (browser window) is within the range of `min_width` and `max_width` specified. If not, it returns False.
-        """
-
-        if min_width == None or max_width == None or type(min_width) != int or type(max_width) != int:
-            return
-        
-        query_result = f'(min-width: {min_width}px) and (max-width: {max_width}px)'
-
-        value = _st_window_query_size(windowType="windowTop", mediaMatchQ=query_result, key=key, default=default)
-        if "firstRunComponent_window_top_range_width" in st.session_state and not st.session_state["firstRunComponent_window_top_range_width"] and self.pause != None:
-            time.sleep(self.pause)
-            st.session_state["firstRunComponent_window_top_range_width"] = True
-
-        return value
     
