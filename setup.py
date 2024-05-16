@@ -7,10 +7,10 @@ long_description = (this_directory / "README.md").read_text()
 
 setuptools.setup(
     name="streamlit-screen-stats",
-    version="0.0.24",
+    version="0.0.69",
     author="",
     author_email="",
-    description="Streamlit component that allows you to get simple facts about the screen to provide custom contextual designs",
+    description="Streamlit component that allows you to get simple facts about the screen to provide custom contextual app designs",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="",
