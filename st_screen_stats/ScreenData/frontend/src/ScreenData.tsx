@@ -6,45 +6,27 @@ import {
 } from "streamlit-component-lib"
 import React, { ReactNode, useState, useEffect } from "react"
 
-const ScreenData: React.FC<ComponentProps> = (props) => {
+const ScreenData: React.FC<ComponentProps> = (props: any) => {
 
   const { args } = props
 
   const setTime: any = args['setTime'] || 1000
-  let windowType: any = args["windowType"]
-
-  const [windowTopWidth, setWindowTopWidth] = useState({
-    screen: {
-      height: window.top?.screen.height,
-      width: window.top?.screen.width,
-      availHeight: window.top?.screen.availHeight,
-      availWidth: window.top?.screen.availWidth,
-      colorDepth: window.top?.screen.colorDepth,
-      pixelDepth: window.top?.screen.pixelDepth,
-      screenOrientation: {
-        angle: window.top?.screen.orientation.angle,
-        type: window.top?.screen.orientation.type
-      }
-    },
-    innerWidth: window.top?.innerWidth,
-    innerHeight: window.top?.innerHeight
-  })
 
   const [windowWidth, setWindowWidth] = useState({
     screen: {
-      height: window.screen.height,
-      width: window.screen.width,
-      availHeight: window.screen.availHeight,
-      availWidth: window.screen.availWidth,
-      colorDepth: window.screen.colorDepth,
-      pixelDepth: window.screen.pixelDepth,
+      height: window.parent.screen.height,
+      width: window.parent.screen.width,
+      availHeight: window.parent.screen.availHeight,
+      availWidth: window.parent.screen.availWidth,
+      colorDepth: window.parent.screen.colorDepth,
+      pixelDepth: window.parent.screen.pixelDepth,
       screenOrientation: {
-        angle: window.screen.orientation.angle,
-        type: window.screen.orientation.type
+        angle: window.parent.screen.orientation.angle,
+        type: window.parent.screen.orientation.type
       }
     },
-    innerWidth: window.innerWidth,
-    innerHeight: window.innerHeight
+    innerWidth: window.parent.innerWidth,
+    innerHeight: window.parent.innerHeight
 
   })
 
@@ -60,80 +42,34 @@ const ScreenData: React.FC<ComponentProps> = (props) => {
 
     setWindowWidth({
       screen: {
-        height: window.screen.height,
-        width: window.screen.width,
-        availHeight: window.screen.availHeight,
-        availWidth: window.screen.availWidth,
-        colorDepth: window.screen.colorDepth,
-        pixelDepth: window.screen.pixelDepth,
+        height: window.parent.screen.height,
+        width: window.parent.screen.width,
+        availHeight: window.parent.screen.availHeight,
+        availWidth: window.parent.screen.availWidth,
+        colorDepth: window.parent.screen.colorDepth,
+        pixelDepth: window.parent.screen.pixelDepth,
         screenOrientation: {
-          angle: window.screen.orientation.angle,
-          type: window.screen.orientation.type
+          angle: window.parent.screen.orientation.angle,
+          type: window.parent.screen.orientation.type
         }
       },
-      innerWidth: window.innerWidth,
-      innerHeight: window.innerHeight
+      innerWidth: window.parent.innerWidth,
+      innerHeight: window.parent.innerHeight
     })
 
-  })
-
-  const delayedScreenWidthTop = debounce(function detectSizeTop() {
-    setWindowTopWidth({
-      screen: {
-        height: window.top?.screen.height,
-        width: window.top?.screen.width,
-        availHeight: window.top?.screen.availHeight,
-        availWidth: window.top?.screen.availWidth,
-        colorDepth: window.top?.screen.colorDepth,
-        pixelDepth: window.top?.screen.pixelDepth,
-        screenOrientation: {
-          angle: window.top?.screen.orientation.angle,
-          type: window.top?.screen.orientation.type
-        }
-      },
-      innerWidth: window.top?.innerWidth,
-      innerHeight: window.top?.innerHeight
-
-    })
   })
 
   useEffect(() => {
 
-    switch (windowType) {
-      case "window":
-        Streamlit.setComponentValue(windowWidth)
-        Streamlit.setComponentReady()
-        break
-      default:
-        break
-    }
+    Streamlit.setComponentValue(windowWidth)
+    Streamlit.setComponentReady()
 
-    window.addEventListener('resize', delayedScreenWidth)
+    window.parent.addEventListener('resize', delayedScreenWidth)
 
     return () => {
-      window.removeEventListener('resize', delayedScreenWidth)
+      window.parent.removeEventListener('resize', delayedScreenWidth)
     }
   }, [windowWidth])
-
-  useEffect(() => {
-
-    switch (windowType) {
-      case "windowTop":
-        
-        Streamlit.setComponentValue(windowTopWidth)
-        Streamlit.setComponentReady()
-        break
-      default:
-        break
-    }
-
-    window.top?.addEventListener('resize', delayedScreenWidthTop)
-
-    return () => {
-      window.top?.removeEventListener('resize', delayedScreenWidthTop)
-    }
-
-  }, [windowTopWidth])
 
 
   return (
