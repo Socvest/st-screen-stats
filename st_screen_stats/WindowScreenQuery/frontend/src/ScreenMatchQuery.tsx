@@ -11,76 +11,26 @@ const ScreenMatchQuery: React.FC<ComponentProps> = (props) => {
 
   const { args } = props
   let mediaMatchQ: any = args["mediaMatchQ"]
-  let windowType: any = args["windowType"]
+
+  const [screenWidthChange, setScreenWidthChange] = useState(window.parent.matchMedia(mediaMatchQ).matches)
+
+  const MediaMatchWindow = () => {
+    let mediaMatch_2 = window.parent.matchMedia(mediaMatchQ).matches;
+    setScreenWidthChange(mediaMatch_2);
+  }
 
   useEffect(() => {
 
-    switch (windowType) {
-      case "window":
-        let mediaMatch_ = window.matchMedia(mediaMatchQ).matches;
+    const mediaQuery = window.parent.matchMedia(mediaMatchQ);
+    Streamlit.setComponentValue({ status: screenWidthChange })
+    Streamlit.setComponentReady() 
 
-        Streamlit.setComponentValue({ status: mediaMatch_ })
-        Streamlit.setComponentReady()
-        break
-      case "windowTop":
-        let mediaMatch_2 = window.top?.matchMedia(mediaMatchQ).matches
-
-        Streamlit.setComponentValue({ status: mediaMatch_2 })
-        Streamlit.setComponentReady()
-        break
-      default:
-        break
-    }
-
-
-  }, [])
-
-  useEffect(() => {
-
-    let matchQueryWindow = window.matchMedia(mediaMatchQ);
-
-    const MediaMatchWindow = () => {
-      switch (windowType) {
-        case "window":
-          let mediaMatch_1 = window.matchMedia(mediaMatchQ).matches;
-          Streamlit.setComponentValue({ status: mediaMatch_1 })
-          Streamlit.setComponentReady()
-          break;
-        default:
-          break;
-      }
-    };
-    matchQueryWindow.addEventListener("change", MediaMatchWindow);
+    mediaQuery.addEventListener("change", MediaMatchWindow);
 
     return () => {
-      matchQueryWindow.removeEventListener("change", MediaMatchWindow);
+      mediaQuery.removeEventListener("change", MediaMatchWindow);
     };
-  }, []);
-
-
-  useEffect(() => {
-    let matchQueryWindow = window.top?.matchMedia(mediaMatchQ)
-
-    const MediaMatchWindow = () => {
-      switch (windowType) {
-        case "windowTop":
-          let mediaMatch_2 = window.top?.matchMedia(mediaMatchQ).matches
-          Streamlit.setComponentValue({ status: mediaMatch_2 })
-          Streamlit.setComponentReady()
-          break;
-        default:
-          break;
-      }
-    };
-
-
-    matchQueryWindow?.addEventListener("change", MediaMatchWindow);
-
-    return () => {
-      matchQueryWindow?.removeEventListener("change", MediaMatchWindow);
-    };
-  }, []);
-
+  }, [screenWidthChange]);
 
   return (
     <div style={{ display: "none" }}></div>
