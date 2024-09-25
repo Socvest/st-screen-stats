@@ -19,22 +19,14 @@ screenD = ScreenData(setTimeout=1000)
 screen_d = screenD.st_screen_data()
 st.write(screen_d)
 
-## You can now use the on_change parameter. 
-# The component works such that on first mount/app load it sends the value to streamlit. 
-# Subsequent app reloads will most likely return None or the value selected for the `default` parameter unless there has been a change in the size of the screen. 
-# To make sure you only get a value when there has been a legitimate change in the screen width/size, utilise the on_change parameter to set the results on change of the screen width to a session_state value.
-# Example:
-
-def onScreenSizeChange(updated_screen, component_function_):
-
-    st.session_state[updated_screen] = st.session_state[component_function_]
-
-if "screen_stats_result" not in st.session_state:
-    st.session_state["screen_stats_result"] = screenD.st_screen_data(key="screen_stats_")
-else:
-    helper_screen_stats.window_range_width(min_width=1000, max_width=1100, on_change=onScreenSizeChange, args=("screen_stats_result", "screen_stats_post_first_mount_",) key="screen_stats_post_first_mount_")
-
-st.write(st.session_state["screen_stats_result"]) 
+## You can now use the on_change parameter on all class methods of this package. 
+def onScreenSizeChange(variable):
+    ## do something when the screen size has changed.
+    #example
+    print(variable)
+    
+screen_stats_result = screenD.st_screen_data(key="screen_stats_", on_change=onScreenSizeChange("this works")) 
+st.write(st.session_state["screen_stats_"]) 
 
 # using sctreamlit native widget and some custom components
 # Requirements:
@@ -46,25 +38,7 @@ screen_stats_window = screenDN.get_window_screen_stats()
 st.write(screen_stats_window)
 
 # Query window screen like you would when using CSS @media () {}
-# Returns dictionary result `{'status':True}` if conditions are met
-
-## Some considerations. Because of how streamlit, there must be a default value sent to the component before the component mounts/loads completely. Even if `default=None` is used, it will send `None` to streamlit before the actual data we desire. This will cause a slight glitch/error when the component is loading. 
-
-# A few solutions:
-# 1. You could use a simple time.sleep(1) after you instantiate the class method:
-    # example 
-    window_width_query_raw = WindowQuerySize()
-    window_width_res = window_width_query_raw.mediaQuery(mediaMatchQ="(max-width: 700px)")
-    time.sleep(1.5)
-# 2. You could send an assumption into the default variable. This will make sure the component at least loads the structure of the end data result and load the app without errors. Though if it loads the default and the component loads the antithesis, it may mean switches in between your if conditions (though it is instant, like a blink).
-    # example
-    window_width_query_raw = WindowQuerySize()
-    window_width_res = window_width_query_raw.mediaQuery(mediaMatchQ="(max-width: 700px)", default={"status":False})
-#3. Use the pause parameter built in. This pauses the component for a period of time to give it time to load/mount to load the actual data. Though thereafter, the pause will no longer be needed/implemented as the data will be provided when the screen width changes instantly. 
-    # example
-    window_width_query_raw = WindowQuerySize(pause=1.5)
-    window_width_res = window_width_query_raw.mediaQuery(mediaMatchQ="(max-width: 700px)", default={"status":False})
-
+# Returns dictionary result `{'status':True}` if conditions are met else `{'status':False}` if conditions are not met.
 window_width_query_raw = WindowQuerySize()
 window_width_res = window_width_query_raw.mediaQuery(mediaMatchQ="(max-width: 700px)") # returns dictionary result {'status':True} if window screen width is lower than 700px else {'status':False} if window screen width is greater than 700px
 st.write(window_width_res)
@@ -81,21 +55,15 @@ window_range = helper_screen_stats.window_range_width(min_width=1000, max_width=
 st.write("range", window_range) 
 
 ## You can now use the on_change parameter. 
-# The component works such that on first mount/app load it sends the value to streamlit. 
-# Subsequent app reloads will most likely return None or the value selected for the `default` parameter unless there has been a change in the size of the screen. 
-# To make sure you only get a value when there has been a legitimate change in the screen width/size, utilise the on_change parameter to set the results on change of the screen width to a session_state value.
 # Example:
 
-def onScreenSizeChange(updated_screen, component_function_):
+def onScreenSizeChange(value):
+    
+    print(value)
 
-    st.session_state[updated_screen] = st.session_state[component_function_]
+large_screen_size_ = helper_screen_stats.window_range_width(min_width=1000, max_width=1100, on_change=onScreenSizeChange(value) key="lg_screen")
 
-if "large_screen_size_" not in st.session_state:
-    st.session_state["large_screen_size_"] = helper_screen_stats.window_range_width(min_width=1000, max_width=1100, key="lg_screen")
-else:
-    helper_screen_stats.window_range_width(min_width=1000, max_width=1100, on_change=onScreenSizeChange, args=("large_screen_size_", "lg_screen_post_first_mount",) key="lg_screen_post_first_mount")
-
-if st.session_state["large_screen_size_"]["status"]:
+if large_screen_size_["status"] or st.session_state["lg_screen"]["status"]:
     st.write("rest of code here")
 
 ```
